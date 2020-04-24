@@ -1,6 +1,6 @@
 # AI Project AVALAM
 
-Samelson Nicolas - 17288
+Samelson Nicolas - 17288  
 Pinto Pedro - 17010
 
 ## Programming language used :
@@ -13,7 +13,7 @@ Python 3.7.5
 * json
 * socket
 * sys
-* math (using infinity)
+* math 
 * os
 * msgpack
 * Random 
