@@ -16,7 +16,8 @@ Python 3.7.5
 * math 
 * os
 * msgpack
-* Random 
+* random 
+* pprint
 
 ## AI strategy:
 
