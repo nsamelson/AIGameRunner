@@ -1,7 +1,7 @@
 # AI Project AVALAM
 
 Samelson Nicolas - 17288  
-Pinto Pedro - 17010
+Roquero Pedro - 17010
 
 ## Programming language used :
 
