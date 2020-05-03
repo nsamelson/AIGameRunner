@@ -21,7 +21,7 @@ all variables :
     choosing_depth : the depth we want to check in advance = the numbers of moves checked in advance
     FORMAT : format to encode messages and sending with socket module
     Server : the address (localhost when local) will change with 127.0.0.1
-    PORT : ports in link with the address (8080 for sending ping and 3000 for the gamerunner)
+    PORT : ports in link with the address (8080 for sending ping and 3001 for the gamerunner)
     Header : max size of the text (must be a tuple of 2)
 """
 HEADER = 4096
@@ -29,10 +29,9 @@ PORT = 3001
 FORMAT = 'utf-8'
 SERVER = "localhost"
 ADDR = (SERVER, PORT)
-
 human = -1
 computer = +1
-name = "Jack Uzi"
+name = "Jackou"
 board = []
 counter = 0
 choosing_depth=4
@@ -59,6 +58,20 @@ def game_over(state):
     else:
         return False
 
+def eval_cell(cell):
+    """
+    evaluates the new cell that received the pawns from another cell 
+    return : 0 if nothing, 1 or -1 if not a full tower and 5 or -5 if full tower
+    """
+    if not cell: return 0
+    x = 1 if len(cell) < 5 else 5
+    return x if not cell[-1] else -x
+    
+def diff(x, y, a, b, state):
+    """
+    Calculate the difference in points caused by set_move
+    """
+    return eval_cell(state[a][b] + state[x][y]) - eval_cell(state[x][y])  - eval_cell(state[a][b])
 
     
 def all_moves(state):
@@ -89,7 +102,6 @@ def set_move(x,y,a,b,state):
     parm x and y : row and col from
     param a and b : row and col to
     """
-    global board
     state[a][b].extend(state[x][y])
     state[x][y].clear()
 
@@ -105,23 +117,27 @@ def eval(state):
     for row in state: 
         for col in row:
             length = len(col)
+
             if length == 0:
                 pass
-            elif 0<length<5:
-                if col[-1]==1:
-                    points -= 1
-                elif col[-1]==0:
-                    points +=1
-            elif length == 5:
-                if col[-1]==1:
-                    points -= 5
+            else :
+                count0= col.count(0)
+                count1 = col.count(1)
+                if 0<length<5:
+                    if col[-1]==1:
+                        points -= 1
+                    elif col[-1]==0:
+                        points += 1
+                elif length == 5:
+                    if col[-1]==1:
+                        points -= 5
                     
-                elif col[-1]==0:
-                    points +=5       
+                    elif col[-1]==0:
+                        points +=5 
     return points
 def choose_depth(state):
     """
-    param: state, checking all the movements we can still do
+    param: state = board, checking all the remaining cells that can be used
     and setting the max depth in the minimax
     """
     global choosing_depth
@@ -130,11 +146,15 @@ def choose_depth(state):
         for y in x:
             if len(y) ==1:
                 pile_count +=1
-    if pile_count >= 16:
+    if pile_count >= 14:
         choosing_depth = 3
-    elif 10<= pile_count<16:
+    elif 10<= pile_count<14:
+        choosing_depth = 4
+    elif 8<= pile_count<10:
+        choosing_depth = 5
+    elif 6<= pile_count<8:
         choosing_depth = 3
-    elif pile_count ==1:
+    elif pile_count <=4:
         choosing_depth = 1
     else:
         choosing_depth =2
@@ -148,18 +168,15 @@ def minimax(state,depth,alpha,beta,player):
     return : returns the best move of its children
     """
     
-    global counter
-    global points
-    global choosing_depth
-    
     temp_board = msgpack.packb(state)
+    base_eval = eval(state)     #basic evaluation of the board
+
     if player == computer:
         best = {"from":list,"to":list,"tscore":-infinity}        # - inf because we want the algo to maximize for the computer
     else :
         best = {"from":list,"to":list,"tscore":+infinity}
 
     if depth == 0 or game_over(state):          #when we're at the level under the leaves, leaves depth = 1
-
         return best
 
     for move in all_moves(state):      #the loop that iterates itself when going inside it's children
@@ -167,11 +184,10 @@ def minimax(state,depth,alpha,beta,player):
         a,b = move["to"]
         
         new_state = msgpack.unpackb(temp_board)
-        set_move(x,y,a,b,new_state) 
+        set_move(x,y,a,b,new_state)     #creating a copy and setting a new move in the copy
         
         if depth == 1: # if leaf
-            counter +=1
-            move["tscore"] = eval(new_state) #it calls the evaluate to put score on the leaves
+            move["tscore"] = base_eval + diff(x, y, a, b, new_state)    #checks the base evaluation from parent and adding the difference with the child
 
         else:       #we iterate the function minimax by taking the best score the children returned
             move["tscore"] = minimax(new_state,depth-1,alpha,beta,-player)["tscore"] # = the best score from children
@@ -183,8 +199,6 @@ def minimax(state,depth,alpha,beta,player):
             if best["tscore"]< move["tscore"]:
                 best = move     #max value
             alpha = max(alpha,best["tscore"])
-            
-            
         else :
             if best["tscore"]> move["tscore"]:
                 best = move     #min value
@@ -231,15 +245,14 @@ class Server:
         t0=time.time()
 
         choose_depth(board) #choose the depth
-
+        print(choosing_depth)
         if player1 == name:  #playing with 0 as it's pawns
             best_move = minimax(board,choosing_depth,-infinity,infinity,computer)
         else:
             best_move = minimax(board,choosing_depth,-infinity,infinity,human)
-            
+
         x,y = best_move["from"]
         a,b = best_move["to"]
-        print(pprint.pformat(body))
         print("time processing the possibilities :",time.time()-t0,"seconds")
         
         return {
@@ -264,9 +277,6 @@ if __name__ == "__main__":
 
     webbrowser.open('http://localhost:8080/ping')
     print('browser started !')
-    
-    # send()
-    
-    
+
     cherrypy.config.update({'server.socket_host': '0.0.0.0', 'server.socket_port': port})
     cherrypy.quickstart(Server())
