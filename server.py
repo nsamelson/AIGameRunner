@@ -43,7 +43,7 @@ def subscribeHandler():
 
 def startBrowser():
     time.sleep(2)
-    # webbrowser.open('http://localhost:3000')
+    webbrowser.open('http://localhost:3000')
     # print('browser started !')
 
 class Server:
