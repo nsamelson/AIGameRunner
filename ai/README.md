@@ -18,24 +18,38 @@ Python 3.7.5
 * msgpack
 * random 
 * pprint
+* time
+* webbrowser
 
 ## AI strategy:
 
-Before playing, the AI will choose a depth of moves ahead of the current game 
-depending on the advancement of the game. Starting by a depth of 3, going up to 4
-and then when there isn't a lot of possibilities it will decrease.
+Before playing, the AI will choose a depth of moves ahead of the current game (depth) 
+depending on the advancement of the game. Starting by a depth of 3, going up to 5 (in the middle of the game)
+and then when there isn't a lot of possibilities, it will decrease.
 
-After choosing it's depth it will choose the best move to do fo the AI to mark the best score.
+After choosing it's depth it will choose the best move to do for the AI to mark the best score.
 For it to happen, we used minimax and alpha beta prunning:
 
-1. At the deepest depth, or the leaves, it will check the state of the board and
-calculate a score. For each pawn tower, it will add an amount of points,
-if the height is between 1 and 4 and the score will be of 1 point, 
-depending on the top pawn of the tower, +1 for the colour of the AI and -1
-if it's the colour of the ennemy. If the height is 5, then it will add +5 or -5
-depending on the top pawn of the tower
+- If we consider the algorithm as a tree and the root is the shallowest depth and the leaves are the deepest depth.
+At each depth (except the leaves), it will check the state of the board and
+calculate a score. For each pawn tower, it will add an amount of points :  
+  -  If the height is between 1 and 4 then the score will be of 1 point ;
+  -  If the height is 5, then it will be of 5 points;
+  -  Depending on the top pawn of the tower, the score will be positive for the colour of the AI and negative if it's the colour of the ennemy;  
+   
 
-1. With the score of each possible move on the leaves, the algorythm Minimax will run and 
-maximize the AI and minimize the player. Alpha Beta is implemented to prune some leaves and 
+- At the leaves, or the deepest depth, it will quickly calculate the difference between its parent and itself,the child. It only evaluates the pawn that moved between the parent and the child.
+
+- With the score of each possible move on the leaves, the algorythm Minimax will run and 
+maximize the AI and minimize the player. 
+
+- Alpha Beta is implemented to prune some leaves and 
 optimize a lot the process.
 
+## How to run:
+
+1. Firstly first, run the file server.py, a webpage should open.
+
+1. Then, in the terminal (cmd), go to the directory "ai" with the command `cd ai`.
+
+1. Run the file avalam5.0.py with the command `python Avalam5.0.py 8080`(the port 8080 is an example), a webpage should open with "pong" in return.
