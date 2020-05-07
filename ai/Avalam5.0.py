@@ -216,6 +216,8 @@ def send ():
     """
     with open("matricules.json") as file:
         msg = json.loads(file.read())
+    
+    msg.update(port = port) #change the port when launching the file
     msg = json.dumps(msg)       #transforing the dict into a string
     message = msg.encode(FORMAT)    #encoding in utf8
     msg_length = len(message)   
@@ -273,9 +275,9 @@ if __name__ == "__main__":
         port=int(sys.argv[1])
     else:
         port=8080
-    
+    site = f"http://localhost:{port}/ping"
 
-    webbrowser.open('http://localhost:8080/ping')
+    webbrowser.open(site)
     print('browser started !')
 
     cherrypy.config.update({'server.socket_host': '0.0.0.0', 'server.socket_port': port})
